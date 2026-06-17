@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "458293111825",
+    "project_id": "xtrus-fcm",
+    "storage_bucket": "xtrus-fcm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:458293111825:android:ed09d87364a35d1c7e55b0",
+        "android_client_info": {
+          "package_name": "com.esum.kr.xtrus_notify_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFUSQXmPatLUXMYbUG8rhF7RmXrxDtzrs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:458293111825:android:52011e7754b62d8a7e55b0",
+        "android_client_info": {
+          "package_name": "com.xtrus.fcm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFUSQXmPatLUXMYbUG8rhF7RmXrxDtzrs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
