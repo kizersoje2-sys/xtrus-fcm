@@ -11,9 +11,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.xtrus.fcm",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
-          "remote-notification",
           "remote-notification"
         ],
         "ITSAppUsesNonExemptEncryption": false
