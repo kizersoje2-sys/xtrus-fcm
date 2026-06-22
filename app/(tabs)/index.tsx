@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-//import { getMessaging, getToken, onTokenRefresh } from '@react-native-firebase/messaging';
+import { getMessaging, getToken, onTokenRefresh } from '@react-native-firebase/messaging';
 import CryptoJS from 'crypto-js';
 import * as Clipboard from 'expo-clipboard';
 import * as MailComposer from 'expo-mail-composer';
@@ -90,18 +90,18 @@ export default function HomeScreen() {
       try {
         inDb = SQLite.openDatabaseSync('fcm_history.db');
         await initDB();
-        // await registerForPushNotificationsAsync();
+        await registerForPushNotificationsAsync();
 
         const id = await getOrGenerateDeviceId();
         if (isMounted) setDeviceId(id);
 
-        // 영구 저장소에서 등록 상태 확인
-        // const registeredStatus = await SecureStore.getItemAsync(FCM_REGISTERED_KEY);
-        // if (registeredStatus === 'true') {
-        //   if (isMounted) setIsRegistered(true);
-        //   // 이미 인증된 기기라면 로그 목록 로드
-        //   loadNotificationLogs();
-        // }
+        
+        const registeredStatus = await SecureStore.getItemAsync(FCM_REGISTERED_KEY);
+        if (registeredStatus === 'true') {
+          if (isMounted) setIsRegistered(true);
+          // 이미 인증된 기기라면 로그 목록 로드
+          loadNotificationLogs();
+        }
       } catch (error) {
         console.error('초기화 에러:', error);
       } finally {
@@ -111,79 +111,79 @@ export default function HomeScreen() {
     initializeApp();
 
     // 푸시 알림 수신 동적 리스너
-    // const onPushReceived = async (title: string, body: string, data: any) => {
-    //   await handlerIncomingPush(title, body, data);
+    const onPushReceived = async (title: string, body: string, data: any) => {
+      await handlerIncomingPush(title, body, data);
 
-    //   // 푸시를 받으면 대기 상태 해제, 등록 완료 처리 후 리스트 갱신
-    //   const registeredStatus = await SecureStore.getItemAsync(FCM_REGISTERED_KEY);
-    //   if (registeredStatus !== 'true') {
-    //     await SecureStore.setItemAsync(FCM_REGISTERED_KEY, 'true');
-    //     if (isMounted) {
-    //       setIsRegistered(true);
-    //       setIsWaitingAuth(false); // 대기 화면 종료
-    //     }
-    //     Alert.alert("인증 완료", "최초 FCM 알림 수신이 확인되어 기기 등록이 완료되었습니다!");
-    //   }
-    //   loadNotificationLogs();
-    // };
+      // 푸시를 받으면 대기 상태 해제, 등록 완료 처리 후 리스트 갱신
+      const registeredStatus = await SecureStore.getItemAsync(FCM_REGISTERED_KEY);
+      if (registeredStatus !== 'true') {
+        await SecureStore.setItemAsync(FCM_REGISTERED_KEY, 'true');
+        if (isMounted) {
+          setIsRegistered(true);
+          setIsWaitingAuth(false); // 대기 화면 종료
+        }
+        Alert.alert("인증 완료", "최초 FCM 알림 수신이 확인되어 기기 등록이 완료되었습니다!");
+      }
+      loadNotificationLogs();
+    };
 
-    // const foregroundListener = Notifications.addNotificationReceivedListener(notification => {
-    //   const body = notification.request.content.body || "내용 없는 알림";
-    //   const title = notification.request.content.title || "알림";
-    //   const data = notification.request.content.data || {};
-    //   onPushReceived(title, body, data);
-    // });
+    const foregroundListener = Notifications.addNotificationReceivedListener(notification => {
+      const body = notification.request.content.body || "내용 없는 알림";
+      const title = notification.request.content.title || "알림";
+      const data = notification.request.content.data || {};
+      onPushReceived(title, body, data);
+    });
 
-    // const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-    //   const body = response.notification.request.content.body || "내용 없는 알림";
-    //   const title = response.notification.request.content.title || "알림";
-    //   const data = response.notification.request.content.data || {};
-    //   onPushReceived(title, body, data);
-    // });
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      const body = response.notification.request.content.body || "내용 없는 알림";
+      const title = response.notification.request.content.title || "알림";
+      const data = response.notification.request.content.data || {};
+      onPushReceived(title, body, data);
+    });
 
-    // // 내부 수신 이벤트 리스너
-    // const subscription = DeviceEventEmitter.addListener('NewPushDataArrived', () => {
-    //   loadNotificationLogs();
-    // });
+    // 내부 수신 이벤트 리스너
+    const subscription = DeviceEventEmitter.addListener('NewPushDataArrived', () => {
+      loadNotificationLogs();
+    });
 
-    // const checkTokenOnStart = async () => {
-    //   const messagingInstance = getMessaging();
-    //   const currentToken = await getToken(messagingInstance);
-    //   const savedToken = await SecureStore.getItemAsync('SAVED_FCM_TOKEN');
+    const checkTokenOnStart = async () => {
+      const messagingInstance = getMessaging();
+      const currentToken = await getToken(messagingInstance);
+      const savedToken = await SecureStore.getItemAsync('SAVED_FCM_TOKEN');
 
-    //   if (savedToken && currentToken !== savedToken) {
-    //     await SecureStore.deleteItemAsync(FCM_REGISTERED_KEY);
-    //     if (isMounted) {
-    //       setIsRegistered(false);
-    //       setIsWaitingAuth(true);
-    //     }
-    //     Alert.alert("인증 만료", "푸시 토큰이 변경되어 재인증이 필요합니다.");
-    //   }
+      if (savedToken && currentToken !== savedToken) {
+        await SecureStore.deleteItemAsync(FCM_REGISTERED_KEY);
+        if (isMounted) {
+          setIsRegistered(false);
+          setIsWaitingAuth(true);
+        }
+        Alert.alert("인증 만료", "푸시 토큰이 변경되어 재인증이 필요합니다.");
+      }
 
-    //   await SecureStore.setItemAsync('SAVED_FCM_TOKEN', currentToken);
-    //   if (isMounted) setFcmToken(currentToken);
-    // };
+      await SecureStore.setItemAsync('SAVED_FCM_TOKEN', currentToken);
+      if (isMounted) setFcmToken(currentToken);
+    };
 
-    // // ⭐ 구형 경고 수정을 위해 onTokenRefresh 뒤에 괄호() 명시적 추가 및 함수형 변경
-    // const unsubscribe = onTokenRefresh(getMessaging(), async (newToken) => {
-    //   console.log("fcm 토큰이 새롭게 갱신되었습니다.", newToken);
-    //   try {
-    //     if (isMounted) setFcmToken(newToken);
-    //     await SecureStore.deleteItemAsync(FCM_REGISTERED_KEY);
-    //     if (isMounted) {
-    //       setIsRegistered(false);
-    //       setIsWaitingAuth(false);
-    //     }
-    //     Alert.alert(
-    //       "인증 갱신",
-    //       "푸시 토큰이 변경되어 재인증이 필요합니다.\n발송된 메일을 확인하여 다시 인증을 완료해 주세요.",
-    //       [{ text: "확인" }]
-    //     );
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // });
-    // checkTokenOnStart();
+    // ⭐ 구형 경고 수정을 위해 onTokenRefresh 뒤에 괄호() 명시적 추가 및 함수형 변경
+    const unsubscribe = onTokenRefresh(getMessaging(), async (newToken) => {
+      console.log("fcm 토큰이 새롭게 갱신되었습니다.", newToken);
+      try {
+        if (isMounted) setFcmToken(newToken);
+        await SecureStore.deleteItemAsync(FCM_REGISTERED_KEY);
+        if (isMounted) {
+          setIsRegistered(false);
+          setIsWaitingAuth(false);
+        }
+        Alert.alert(
+          "인증 갱신",
+          "푸시 토큰이 변경되어 재인증이 필요합니다.\n발송된 메일을 확인하여 다시 인증을 완료해 주세요.",
+          [{ text: "확인" }]
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    checkTokenOnStart();
 
     // IP 및 국가 판별
     const checkLocationByIp = async () => {
@@ -197,7 +197,8 @@ export default function HomeScreen() {
           console.log("현재 아이피 :: ", currentPublicIp);
         }
 
-        const geoResponse = await fetch(`http://ip-api.com/json/${currentPublicIp}`);
+        // const geoResponse = await fetch(`http://ip-api.com/json/${currentPublicIp}`);
+        const geoResponse = await fetch(`https://ipapi.co/${currentPublicIp}/json/`);
         const geoData = await geoResponse.json();
 
         if (isMounted) {
@@ -215,10 +216,10 @@ export default function HomeScreen() {
 
     return () => {
       isMounted = false; // 컴포넌트 해제 시 플래그 off
-      // foregroundListener.remove();
-      // responseListener.remove();
-      // subscription.remove();
-      // unsubscribe();
+      foregroundListener.remove();
+      responseListener.remove();
+      subscription.remove();
+      unsubscribe();
     };
   }, []);
 
@@ -350,11 +351,11 @@ export default function HomeScreen() {
         });
       }
 
-      // const tokenData = await Notifications.getDevicePushTokenAsync();
-      // if (tokenData && tokenData.data) {
-      //   setFcmToken(tokenData.data);
-      //   await SecureStore.setItemAsync('SAVED_FCM_TOKEN', tokenData.data);
-      // }
+      const tokenData = await Notifications.getDevicePushTokenAsync();
+      if (tokenData && tokenData.data) {
+        setFcmToken(tokenData.data);
+        await SecureStore.setItemAsync('SAVED_FCM_TOKEN', tokenData.data);
+      }
     } catch (error) {
       console.error('토큰 생성 중 오류 발생', error);
     }
