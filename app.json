@@ -3,7 +3,7 @@
     "name": "xtrus-fcm",
     "slug": "xtrus-fcm",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "xtrusfcm",
     "userInterfaceStyle": "automatic",
@@ -53,17 +53,22 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/icon.png",
-          "color": "#ffffff"
+          "icon": "./assets/images/icon.png"
         }
       ],
       "expo-sqlite",
       "expo-secure-store",
       [
-        "@react-native-firebase/app",
+        "expo-build-properties",
         {
           "ios": {
             "useFrameworks": "static"
+          },
+          "android": {
+            "enableMultiDex": true,
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
           }
         }
       ],
