@@ -83,24 +83,7 @@
         }
       ],
       "expo-font",
-      "@sentry/react-native",
-      ["@react-native-firebase/app",
-        {
-          "ios": {
-            "googleServicesFile": "./GoogleService-Info.plist",
-            "skipAppDelegateInit": true
-          }
-        }
-      ],
-      [
-        "@react-native-firebase/messaging",
-        {
-          "ios": {
-            "skipAppDelegateInit": true
-          }
-        }
-      ]
-      
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true,
