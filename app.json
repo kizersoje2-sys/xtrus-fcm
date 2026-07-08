@@ -87,7 +87,8 @@
       ["@react-native-firebase/app",
         {
           "ios": {
-            "googleServicesFile": "./GoogleService-Info.plist"
+            "googleServicesFile": "./GoogleService-Info.plist",
+            "skipAppDelegateInit": true
           }
         }
       ],
