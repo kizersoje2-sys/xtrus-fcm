@@ -71,13 +71,13 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static",
-            "extraPodspecOptions": {
+              "extraPodspecOptions": {
               "modular_headers": "true"
-          },
-          "podfileProperties": {
-            "CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES": "YES"
-          }
+            },
+            "podfileProperties": {
+              "CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES": "YES",
+              "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES=YES"
+            }
           },
           "android": {
             "enableMultiDex": true,

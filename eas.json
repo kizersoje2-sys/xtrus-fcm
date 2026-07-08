@@ -21,9 +21,11 @@
     },
     "production": {
       "ios": {
-        "buildConfiguration": "Release"
+        "buildConfiguration": "Release",
+        "image": "macos-tahoe-26.4-xcode-26.4"      
       },
       "env": {
+        "RCT_NEW_ARCH_ENABLED": "0", 
         "CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES": "YES"
       }
     }
