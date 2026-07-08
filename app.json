@@ -8,7 +8,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "xtrusfcm",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "userInterfaceStyle": "light",
       "supportsTablet": true,
