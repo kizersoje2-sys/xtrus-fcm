@@ -30,12 +30,29 @@ import { getOrGenerateDeviceId } from '../../util/deviceId';
 
 // 알림 핸들러 설정
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async () => {
+    return {
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      
+      // 💡 에러 메시지에서 요구하는 필수 프로퍼티를 명확하게 지정합니다.
+      // 안드로이드 포그라운드 팝업을 위해 true로 바인딩합니다.
+      shouldShowBanner: true, 
+      shouldShowList: true,
+      
+      // 혹시 모를 내부 하위 버전 호환성을 위해 우선 남겨둡니다.
+      shouldShowAlert: Platform.select({
+        ios: {
+          displayInForeground: true,
+          presentBanner: true,
+          presentList: true,
+        },
+        android: {
+          displayInForeground: true,
+        },
+      }) as any,
+    };
+  },
 });
 
 let inDb: any = null;
@@ -198,7 +215,7 @@ export default function HomeScreen() {
         }
 
         // const geoResponse = await fetch(`http://ip-api.com/json/${currentPublicIp}`);
-        const geoResponse = await fetch(`https://ipapi.co/${currentPublicIp}/json/`);
+        const geoResponse = await fetch(`https://ipwho.is/${currentPublicIp}`);
         const geoData = await geoResponse.json();
 
         if (isMounted) {
@@ -399,7 +416,9 @@ export default function HomeScreen() {
       const ipData = await ipResponse.json();
       const directIp = ipData.ip;
 
-      const geoResponse = await fetch(`http://ip-api.com/json/${directIp}`);
+      const geoResponse = await fetch(`https://ipwho.is/${directIp}`);
+
+      // const geoResponse = await fetch(`http://ip-api.com/json/${directIp}`);
       const geoData = await geoResponse.json();
       const directCountry = (geoData && geoData.countryCode === 'KR') ? 'KR' : 'OTHER';
 

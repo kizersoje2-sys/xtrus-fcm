@@ -14,6 +14,7 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
+          "remote-notification",
           "remote-notification"
         ],
         "ITSAppUsesNonExemptEncryption": false
@@ -29,7 +30,10 @@
       "package": "com.xtrus.fcm",
       "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "web": {
       "output": "static",
@@ -84,6 +88,9 @@
         "projectId": "f53834db-28f1-4416-90cd-78c96e19f0df"
       }
     },
-    "owner": "jongsunghwang"
+    "owner": "jongsunghwang",
+    "updates": {
+      "url": "https://u.expo.dev/f53834db-28f1-4416-90cd-78c96e19f0df"
+    }
   }
 }
