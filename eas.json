@@ -12,12 +12,17 @@
     },
     "preview": {
       "distribution": "internal",
+      "ios": {
+        "buildConfiguration": "Debug"
+      },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
-      "autoIncrement": true
+      "ios": {
+        "buildConfiguration": "Release"
+      }
     }
   },
   "submit": {

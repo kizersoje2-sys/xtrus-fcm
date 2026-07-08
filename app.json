@@ -2,6 +2,7 @@
   "expo": {
     "name": "xtrus-fcm",
     "slug": "xtrus-fcm",
+    "platform": ["ios", "android"],
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
@@ -9,13 +10,14 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "userInterfaceStyle": "light",
       "supportsTablet": true,
       "bundleIdentifier": "com.xtrus.fcm",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification",
-          "remote-notification"
+          "fetch"
         ],
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -33,7 +35,10 @@
       "predictiveBackGestureEnabled": false,
       "runtimeVersion": {
         "policy": "appVersion"
-      }
+      },
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "web": {
       "output": "static",
@@ -66,7 +71,8 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static"
+            "useFrameworks": "static",
+            "modular_headers": true
           },
           "android": {
             "enableMultiDex": true,
@@ -76,7 +82,24 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "@sentry/react-native",
+      ["@react-native-firebase/app",
+        {
+          "ios": {
+            "googleServicesFile": "./GoogleService-Info.plist"
+          }
+        }
+      ],
+      [
+        "@react-native-firebase/messaging",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+      
     ],
     "experiments": {
       "typedRoutes": true,
@@ -85,12 +108,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "f53834db-28f1-4416-90cd-78c96e19f0df"
+        "projectId": "d167503b-b101-4653-aa21-c9cfb0056012"
       }
-    },
-    "owner": "jongsunghwang",
-    "updates": {
-      "url": "https://u.expo.dev/f53834db-28f1-4416-90cd-78c96e19f0df"
     }
   }
 }
