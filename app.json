@@ -71,7 +71,10 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static"
+            "useFrameworks": "static",
+            "extraPodspecOptions": {
+            "modular_headers": "true"
+        }
           },
           "android": {
             "enableMultiDex": true,
