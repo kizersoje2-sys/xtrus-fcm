@@ -8,7 +8,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "xtrusfcm",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "userInterfaceStyle": "light",
       "supportsTablet": true,
@@ -71,8 +71,7 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static",
-            "modular_headers": true
+            "useFrameworks": "static"
           },
           "android": {
             "enableMultiDex": true,
@@ -80,6 +79,19 @@
             "targetSdkVersion": 35,
             "buildToolsVersion": "35.0.0"
           }
+        }
+      ],
+      [
+        "@react-native-firebase/app",
+        {
+          "ios": { "googleServicesFile": "./GoogleService-Info.plist" },
+          "android": { "googleServicesFile": "./google-services.json" }
+        }
+      ],
+      [
+        "@react-native-firebase/messaging",
+        {
+          "ios": { "skipAppDelegateInit": true }
         }
       ],
       "expo-font",
