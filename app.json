@@ -95,7 +95,7 @@
         "@react-native-firebase/messaging",
         {
           "ios": {
-            "useFrameworks": "static"
+            "skipAppDelegateInit": true
           }
         }
       ]
