@@ -73,8 +73,8 @@
           "ios": {
             "useFrameworks": "static",
             "extraPodspecOptions": {
-            "modular_headers": "true"
-        }
+              "modular_headers": "true"
+          }
           },
           "android": {
             "enableMultiDex": true,
