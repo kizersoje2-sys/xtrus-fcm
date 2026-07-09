@@ -1,0 +1,30 @@
+name: iOS Push Testing Build
+on:
+  push:
+    branches: [ main ] # ⚠️ 본인이 git push하는 메인 브랜치 이름과 일치해야 합니다 (main 또는 master)
+
+jobs:
+  build:
+    runs-on: macos-latest # GitHub에서 제공하는 무료 Mac 서버
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build IPA via Local Runner
+        run: eas build --platform ios --profile development --local --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
