@@ -1,7 +1,7 @@
 name: iOS Push Testing Build
 on:
   push:
-    branches: [ main ] # ⚠️ 본인이 git push하는 메인 브랜치 이름과 일치해야 합니다 (main 또는 master)
+    branches: [ master ] # ⚠️ 본인이 git push하는 메인 브랜치 이름과 일치해야 합니다 (main 또는 master)
 
 jobs:
   build:
