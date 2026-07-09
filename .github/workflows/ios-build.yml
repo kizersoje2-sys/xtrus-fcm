@@ -1,11 +1,11 @@
 name: iOS Push Testing Build
 on:
   push:
-    branches: [ master ] # ⚠️ 본인이 git push하는 메인 브랜치 이름과 일치해야 합니다 (main 또는 master)
+    branches: [ master ]
 
 jobs:
   build:
-    runs-on: macos-latest # GitHub에서 제공하는 무료 Mac 서버
+    runs-on: macos-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -15,25 +15,50 @@ jobs:
         with:
           node-version: 20
 
+      - name: Cache Node Modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache Pods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       - name: Setup EAS CLI
         run: npm install -g eas-cli@latest
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build IPA via Local Runner
-        run: eas build --platform ios --profile development --non-interactive
+      # 1. 다시 --local 플랜으로 우회하여 무료 빌드를 수행합니다.
+      - name: Build Local Tarball
+        run: eas build --platform ios --profile development --local --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
-      
-      - name: Upload iOS Build Artifact
+
+      # 2. [핵심] 가상 Mac 안에서 깨끗하게 .tar.gz 압축을 풀고 정품 .ipa 포맷으로 조립합니다.
+      - name: Package IPA on macOS Runner
+        run: |
+          mkdir -p dist/Payload
+          tar -zxf build-*.tar.gz -C dist/Payload
+          mv dist/Payload/build-* dist/Payload/xtrusfcm.app
+          cd dist
+          zip -r xtrusfcm.ipa Payload
+          
+      # 3. 완성된 순정 .ipa 파일만 대시보드에 업로드합니다.
+      - name: Upload Finished IPA
         uses: actions/upload-artifact@v4
         with:
-          name: ios-build-output
-          path: |
-            *.tar.gz
-            *.ipa
+          name: ios-ready-ipa
+          path: dist/xtrusfcm.ipa
