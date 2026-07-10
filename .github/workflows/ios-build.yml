@@ -50,15 +50,13 @@ jobs:
       # 2. [핵심] 가상 Mac 안에서 깨끗하게 .tar.gz 압축을 풀고 정품 .ipa 포맷으로 조립합니다.
       - name: Package IPA on macOS Runner
         run: |
+          rm -rf dist
           mkdir -p dist/Payload
-          tar -zxf build-*.tar.gz -C dist/Payload
-          mv dist/Payload/build-* dist/Payload/xtrusfcm.app
-          cd dist
-          zip -r xtrusfcm.ipa Payload
           
-      # 3. 완성된 순정 .ipa 파일만 대시보드에 업로드합니다.
-      - name: Upload Finished IPA
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-ready-ipa
-          path: dist/xtrusfcm.ipa
+          tar -zxf build-*.tar.gz -C dist/Payload
+          
+          cd dist/Payload
+          mv build-* xtrusfcm.app
+          
+          cd ..
+          zip -r xtrusfcm.ipa Payload
