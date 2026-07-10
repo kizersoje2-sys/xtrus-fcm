@@ -10,6 +10,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Debug Directory Structure
+        run: |
+          echo "현재 위치:"
+          pwd
+          echo "폴더 목록:"
+          ls -F
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
