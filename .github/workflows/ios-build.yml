@@ -10,55 +10,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Debug Directory Structure
-        run: |
-          echo "현재 위치:"
-          pwd
-          echo "폴더 목록:"
-          ls -F
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-      
-      - name: Setup EAS CLI
-        run: npm install -g eas-cli@latest
 
-      - name: Cache Node Modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      # 1. 모든 패키지 설치
+      - name: Install dependencies
+        run: npm install
 
-      - name: Cache Pods
-        uses: actions/cache@v4
-        with:
-          path: ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+      # 2. 필수! ios 폴더 강제 생성 및 사전 빌드 (cd ios 에러 해결)
+      - name: Expo Prebuild
+        run: npx expo prebuild --platform ios --clean
 
+      # 3. Ruby 환경 설정
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
           bundler-cache: true
 
-      - name: Install Fastlane & CocoaPods
+      # 4. 필수 도구 설치
+      - name: Install Tools
         run: |
           gem install fastlane
           gem install cocoapods
 
-      - name: Clean and Install Pods
-        run: |
-          cd ios
-          rm -rf Pods Podfile.lock
-          pod install
-          cd ..
-
+      # 5. 최종 빌드 (캐시를 활용하며 빌드)
       - name: Build Local Tarball
         run: eas build --platform ios --profile production --local --non-interactive
         env:
