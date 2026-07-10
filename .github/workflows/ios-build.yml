@@ -13,34 +13,31 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
 
-      # 1. 모든 패키지 설치
+      # 1. 의존성 설치
       - name: Install dependencies
         run: npm install
 
-      # 2. 필수! ios 폴더 강제 생성 및 사전 빌드 (cd ios 에러 해결)
-      - name: Expo Prebuild
+      # 2. 로컬 빌드를 위한 네이티브 폴더 생성 (이미 있다면 재구성)
+      - name: Prebuild
         run: npx expo prebuild --platform ios --clean
 
-      # 3. Ruby 환경 설정
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3'
-          bundler-cache: true
-
-      # 4. 필수 도구 설치
-      - name: Install Tools
+      # 3. CocoaPods 설정 및 설치 (여기가 가장 중요합니다)
+      - name: Install CocoaPods
         run: |
-          gem install fastlane
-          gem install cocoapods
+          cd ios
+          # 기존 캐시를 완전히 날리고 깨끗하게 다시 설치
+          rm -rf Pods Podfile.lock
+          pod install
+          cd ..
 
-      # 5. 최종 빌드 (캐시를 활용하며 빌드)
+      # 4. 빌드 실행
       - name: Build Local Tarball
         run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          # App Store Connect API 키는 로컬 빌드 시에도 필요할 수 있으므로 환경변수 유지
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
