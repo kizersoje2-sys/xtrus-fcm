@@ -38,7 +38,7 @@ jobs:
         run: npm install
 
       - name: Build Local Tarball
-        run: eas build --platform ios --profile development --local --non-interactive
+        run: eas build --platform ios --profile production --local --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
@@ -79,7 +79,7 @@ jobs:
           path: dist
       - name: Verify file existence
         run: ls -R dist/
-        
+
       - name: Upload to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
