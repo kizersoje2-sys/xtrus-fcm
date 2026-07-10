@@ -37,8 +37,19 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
 
+      - name: Install Fastlane & CocoaPods
+        run: |
+          gem install fastlane
+          gem install cocoapods
+
       - name: Setup EAS CLI
         run: npm install -g eas-cli@latest
+
+      - name: Cache Pods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
 
       - name: Build Local Tarball
         run: eas build --platform ios --profile production --local --non-interactive
