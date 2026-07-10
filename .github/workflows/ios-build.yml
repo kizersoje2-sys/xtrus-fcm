@@ -31,11 +31,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
 
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
       - name: Setup EAS CLI
         run: npm install -g eas-cli@latest
-
-      - name: Install dependencies
-        run: npm install
 
       - name: Build Local Tarball
         run: eas build --platform ios --profile production --local --non-interactive
