@@ -15,85 +15,28 @@ jobs:
         with:
           node-version: 20
 
-      # 1. 의존성 설치
       - name: Install dependencies
         run: npm install
-        
-      - name: Force Pod Reinstall
+
+      - name: Expo Prebuild & Setup
         run: |
+          npx expo prebuild --platform ios --clean
           cd ios
-          # 캐시 강제 삭제
-          rm -rf Pods
-          rm -rf Podfile.lock
-          # 의존성 강제 설치
           pod install --repo-update
           cd ..
-      # 2. 로컬 빌드를 위한 네이티브 폴더 생성 (이미 있다면 재구성)
-      - name: Prebuild
-        run: npx expo prebuild --platform ios --clean
 
-      # 3. CocoaPods 설정 및 설치 (여기가 가장 중요합니다)
-      - name: Install CocoaPods
-        run: |
-          cd ios
-          # 기존 캐시를 완전히 날리고 깨끗하게 다시 설치
-          rm -rf Pods Podfile.lock
-          pod install
-          cd ..
-
-      # 4. 빌드 실행
       - name: Build Local Tarball
-        run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive
+        run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=app.tar.gz
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-          # App Store Connect API 키는 로컬 빌드 시에도 필요할 수 있으므로 환경변수 유지
+          RCT_NEW_ARCH_ENABLED: 1
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
-          RCT_NEW_ARCH_ENABLED: 1
 
-      - name: Verify build file
-        run: ls -lh build.tar.gz
-
-      - name: Package IPA on macOS Runner
-        run: |
-          rm -rf dist
-          mkdir -p dist/Payload
-          
-          tar -zxf build-*.tar.gz -C dist/Payload
-          
-          TARGET_DIR=$(find dist/Payload -maxdepth 1 -name "build-*" -type d | head -n 1)
-          
-          if [ -n "$TARGET_DIR" ]; then
-            mv "$TARGET_DIR" dist/Payload/xtrusfcm.app
-          fi
-          
-          cd dist
-          zip -r xtrusfcm.ipa Payload
-
-      - name: Upload IPA Artifact
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: xtrusfcm-ipa
-          path: dist/xtrusfcm.ipa
-
-  upload:
-    needs: build
-    runs-on: macos-latest
-    steps:
-      - name: Download IPA Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: xtrusfcm-ipa
-          path: dist
-      - name: Verify file existence
-        run: ls -R dist/
-
-      - name: Upload to TestFlight
-        uses: apple-actions/upload-testflight-build@v1
-        with:
-          app-path: 'dist/xtrusfcm.ipa'
-          issuer-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+          name: app-build
+          path: app.tar.gz
