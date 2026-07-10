@@ -53,10 +53,22 @@ jobs:
           rm -rf dist
           mkdir -p dist/Payload
           
+          echo "=== Root Directory Contents ==="
+          ls -la
+          
           tar -zxf build-*.tar.gz -C dist/Payload
           
-          cd dist/Payload
-          mv build-* xtrusfcm.app
+          echo "=== Unpacked Contents in Payload ==="
+          ls -la dist/Payload
           
-          cd ..
+          TARGET_DIR=$(find dist/Payload -maxdepth 1 -name "build-*" -type d | head -n 1)
+          
+          if [ -n "$TARGET_DIR" ]; then
+            echo "Moving $TARGET_DIR to dist/Payload/xtrusfcm.app"
+            mv "$TARGET_DIR" dist/Payload/xtrusfcm.app
+          else
+            echo "Error: build-* folder not found. Checking if it's already an .app package..."
+          fi
+          
+          cd dist
           zip -r xtrusfcm.ipa Payload
