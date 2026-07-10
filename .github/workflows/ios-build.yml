@@ -37,7 +37,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 1. 다시 --local 플랜으로 우회하여 무료 빌드를 수행합니다.
       - name: Build Local Tarball
         run: eas build --platform ios --profile development --local --non-interactive
         env:
@@ -47,33 +46,42 @@ jobs:
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
 
-      # 2. [핵심] 가상 Mac 안에서 깨끗하게 .tar.gz 압축을 풀고 정품 .ipa 포맷으로 조립합니다.
       - name: Package IPA on macOS Runner
         run: |
           rm -rf dist
           mkdir -p dist/Payload
           
-          echo "=== Root Directory Contents ==="
-          ls -la
-          
           tar -zxf build-*.tar.gz -C dist/Payload
-          
-          echo "=== Unpacked Contents in Payload ==="
-          ls -la dist/Payload
           
           TARGET_DIR=$(find dist/Payload -maxdepth 1 -name "build-*" -type d | head -n 1)
           
           if [ -n "$TARGET_DIR" ]; then
-            echo "Moving $TARGET_DIR to dist/Payload/xtrusfcm.app"
             mv "$TARGET_DIR" dist/Payload/xtrusfcm.app
-          else
-            echo "Error: build-* folder not found. Checking if it's already an .app package..."
           fi
           
           cd dist
           zip -r xtrusfcm.ipa Payload
+
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: xtrusfcm-ipa
           path: dist/xtrusfcm.ipa
+
+  upload:
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - name: Download IPA Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xtrusfcm-ipa
+          path: dist
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-file: 'dist/xtrusfcm.ipa'
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
