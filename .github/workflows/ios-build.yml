@@ -13,7 +13,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
+      
+      - name: Setup EAS CLI
+        run: npm install -g eas-cli@latest
 
       - name: Cache Node Modules
         uses: actions/cache@v4
@@ -42,14 +45,12 @@ jobs:
           gem install fastlane
           gem install cocoapods
 
-      - name: Setup EAS CLI
-        run: npm install -g eas-cli@latest
-
-      - name: Cache Pods
-        uses: actions/cache@v4
-        with:
-          path: ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+      - name: Clean and Install Pods
+        run: |
+          cd ios
+          rm -rf Pods Podfile.lock
+          pod install
+          cd ..
 
       - name: Build Local Tarball
         run: eas build --platform ios --profile production --local --non-interactive
@@ -59,6 +60,7 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
+          RCT_NEW_ARCH_ENABLED: 0
 
       - name: Package IPA on macOS Runner
         run: |
