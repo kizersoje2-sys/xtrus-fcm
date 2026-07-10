@@ -42,7 +42,7 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
-          RCT_NEW_ARCH_ENABLED: 0
+          RCT_NEW_ARCH_ENABLED: 1
 
       - name: Package IPA on macOS Runner
         run: |
