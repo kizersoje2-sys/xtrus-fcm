@@ -18,7 +18,16 @@ jobs:
       # 1. 의존성 설치
       - name: Install dependencies
         run: npm install
-
+        
+      - name: Force Pod Reinstall
+        run: |
+          cd ios
+          # 캐시 강제 삭제
+          rm -rf Pods
+          rm -rf Podfile.lock
+          # 의존성 강제 설치
+          pod install --repo-update
+          cd ..
       # 2. 로컬 빌드를 위한 네이티브 폴더 생성 (이미 있다면 재구성)
       - name: Prebuild
         run: npx expo prebuild --platform ios --clean
@@ -43,6 +52,9 @@ jobs:
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
           RCT_NEW_ARCH_ENABLED: 1
+
+      - name: Verify build file
+        run: ls -lh build.tar.gz
 
       - name: Package IPA on macOS Runner
         run: |
