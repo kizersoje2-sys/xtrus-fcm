@@ -72,3 +72,8 @@ jobs:
           
           cd dist
           zip -r xtrusfcm.ipa Payload
+      - name: Upload IPA Artifact
+        uses: action/upload-artifact@v4
+        with:
+          name: xtrusfcm-ipa
+          path: dist/xtrusfcm.ipa
