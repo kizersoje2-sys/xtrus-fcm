@@ -38,7 +38,7 @@ jobs:
 
       # 5. 최종 빌드 (캐시를 활용하며 빌드)
       - name: Build Local Tarball
-        run: eas build --platform ios --profile production --local --non-interactive
+        run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
