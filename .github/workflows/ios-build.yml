@@ -13,7 +13,7 @@ jobs:
           rm -rf .expo
           rm -rf .eas
           rm -rf build.tar.gz  # <-- 이전 빌드 결과물 삭제
-          
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -35,22 +35,25 @@ jobs:
 
       # 빌드 파일명을 build.tar.gz로 고정하여 이후 단계에서 찾기 쉽게 함
       - name: Build Local Tarball
-        run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=build.tar.gz
+        # run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=build.tar.gz --clear-cache --build-number 9
+        run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=xtrusfcm.ipa --clear-cache --build-number 9
+    
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_BUILD_NUMBER: 9
           RCT_NEW_ARCH_ENABLED: 1
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
 
-      - name: Package IPA
-        run: |
-          mkdir -p Payload
-          tar -zxf build.tar.gz -C Payload
-          APP_PATH=$(find Payload -name "*.app" -maxdepth 4 | head -n 1)
-          mv "$APP_PATH" Payload/xtrusfcm.app
-          zip -r xtrusfcm.ipa Payload
+      # - name: Package IPA
+      #   run: |
+      #     mkdir -p Payload
+      #     tar -zxf build.tar.gz -C Payload
+      #     APP_PATH=$(find Payload -name "*.app" -maxdepth 4 | head -n 1)
+      #     mv "$APP_PATH" Payload/xtrusfcm.app
+      #     zip -r xtrusfcm.ipa Payload
 
       - name: Upload to TestFlight
         uses: apple-actions/upload-testflight-build@v1
@@ -59,3 +62,4 @@ jobs:
           issuer-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
           api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+          overwrite-build-number: true
