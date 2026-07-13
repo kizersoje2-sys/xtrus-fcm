@@ -165,7 +165,7 @@ export default function HomeScreen() {
   // 5. 기기 인증 정보(기기정보 상태값)
   const [accessIp, setAccessIp] = useState<string>('');
   const [countryCode, setCountryCode] = useState<string>('');
-  
+
   //데이터 더 불러오기
   const fetchMoreData = async (isNew = false, keyword = '') => {
     if (loading || (!isNew && isListEnd)) return;
@@ -181,35 +181,35 @@ export default function HomeScreen() {
 
       const targetKeyword = keyword || searchKeyword;
 
-      if(targetKeyword.trim()){
+      if (targetKeyword.trim()) {
         whereClause += " WHERE messageName LIKE ? OR docNumber LIKE ? OR senderTpId LIKE ? OR recverTpId LIKE ?";
         const pattern = `%${targetKeyword}%`;
         params.push(pattern, pattern, pattern, pattern);
       }
 
-      if(startDate || endDate) {
+      if (startDate || endDate) {
 
-        if(!whereClause) whereClause = " WHERE 1=1 ";
+        if (!whereClause) whereClause = " WHERE 1=1 ";
 
-        if(startDate) {
+        if (startDate) {
           whereClause += "AND SUBSTR(logTime, 1, 8) >= ? ";
           params.push(startDate);
         }
 
-        if(endDate) {
+        if (endDate) {
           whereClause += "AND SUBSTR(logTime, 1, 8) <= ? ";
           params.push(endDate);
         }
       }
-    
+
       const query = `SELECT * FROM notification_logs ${whereClause} ORDER BY id DESC LIMIT 10 OFFSET ${offset}`;
       console.log('데이터 쿼리 :: ', query);
       // console.log('데이터 파라메터 :: ', params);
       const newData = await inDb.getAllAsync(query, params);
       // console.log('데이터 로드!!' , newData);
-      if (newData.length < 10) 
+      if (newData.length < 10)
         setIsListEnd(true);
-      else 
+      else
         setIsListEnd(false);
 
       setPushList(isNew ? newData : [...pushList, ...newData]);
@@ -226,7 +226,7 @@ export default function HomeScreen() {
   // 최초 앱 초기화 및 DB 연결
   useEffect(() => {
     let isMounted = true; // 메모리 누수 방지 플래그
-   
+
     const initializeApp = async () => {
       try {
         inDb = SQLite.openDatabaseSync('fcm_history.db');
@@ -283,7 +283,7 @@ export default function HomeScreen() {
         }
         Alert.alert("인증 완료", "최초 FCM 알림 수신이 확인되어 기기 등록이 완료되었습니다!");
       }
-      
+
     };
 
     const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
@@ -477,7 +477,7 @@ export default function HomeScreen() {
 
     try {
       setListLoading(true);
-      
+
       if (lastCleanDate !== todayStr) {
         await inDb.runAsync(`
           DELETE FROM notification_logs 
@@ -486,9 +486,9 @@ export default function HomeScreen() {
         console.log("7일 지난 오래된 로그 청소 완료");
         await AsyncStorage.setItem(LAST_CLEAN_DATE_KEY, todayStr);
       }
-      
+
       const rows: any[] = await inDb.getAllAsync('SELECT * FROM notification_logs ORDER BY id DESC LIMIT 10 OFFSET 0');
-      
+
       setPushList(rows);
       setPage(1);
     } catch (error) {
@@ -603,7 +603,23 @@ export default function HomeScreen() {
     const platformStr = Platform.OS === 'android' ? 'AOS_APP' : 'IOS_APP';
 
     if (!isAvailable) {
-      Alert.alert('오류', '이메일을 보낼 수 있는 메일 앱이 설정되어 있지 않습니다.');
+      // 2. 메일 앱 설정이 안 되어 있다면 친절한 안내창 출력
+      Alert.alert(
+        "메일 설정 필요",
+        "아이폰 순정 'Mail' 앱에 이메일 계정이 등록되어 있지 않습니다.\n\n설정 -> 메일 -> 계정에서 이메일을 등록하시거나, 아래 토큰을 복사하여 PC에서 메일로 보내주세요.",
+        [
+          { text: "취소", style: "cancel" },
+          {
+            text: "설정으로 이동",
+            onPress: () => {
+              // 아이폰 설정창의 Mail 영역으로 다이렉트 이동 시키기
+              if (Platform.OS === 'ios') {
+                Linking.openURL('app-settings://notification/com.apple.mobilemail');
+              }
+            }
+          }
+        ]
+      );
       return;
     }
     if (!ADMIN_EMAIL.trim()) {
@@ -705,7 +721,7 @@ export default function HomeScreen() {
       const directAppVer = DeviceInfo.getVersion();
 
       const rawData = `${userId}|${deviceId}|${fcmToken}|${platformStr}|${accessIp || '127.0.0.1'}|${countryCode || 'KR'}|${directAppVer}|${directOS}|${directModel}`;
-      
+
       const encrypted = CryptoJS.AES.encrypt(rawData, SECRET_KEY, {
         iv: SHARE_IV,
         mode: CryptoJS.mode.CBC,
@@ -825,9 +841,9 @@ export default function HomeScreen() {
       setPage(0);
       setPushList([]);
       setIsListEnd(false);
-      
+
       await saveDateConditions();
-      
+
       await fetchMoreData(true, searchText);
     };
 
@@ -848,7 +864,7 @@ export default function HomeScreen() {
               style={styles.iconButton}
               onPress={() => setIsSearchOpen(true)}
             >
-            <Ionicons name="search" size={22} color="#ffffff" />
+              <Ionicons name="search" size={22} color="#ffffff" />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -959,7 +975,7 @@ export default function HomeScreen() {
               }
             }}
             onEndReachedThreshold={0.5} // 0.5 정도로 조절 (더 빨리 반응함)
-            ListFooterComponent={loading ? <ActivityIndicator size="small" style={{ marginVertical: 20 }}/> : null}
+            ListFooterComponent={loading ? <ActivityIndicator size="small" style={{ marginVertical: 20 }} /> : null}
             // 추가: 스크롤이 리스트 컨테이너 내부에 꽉 차게 보장
             contentContainerStyle={{ flexGrow: 1, padding: 16 }}
             renderItem={({ item }) => {
