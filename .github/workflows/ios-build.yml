@@ -7,6 +7,13 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
+
+      - name: Clean Workspace
+        run: |
+          rm -rf .expo
+          rm -rf .eas
+          rm -rf build.tar.gz  # <-- 이전 빌드 결과물 삭제
+          
       - name: Checkout repository
         uses: actions/checkout@v4
 
