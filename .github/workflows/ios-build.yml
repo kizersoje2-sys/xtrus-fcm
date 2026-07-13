@@ -51,6 +51,24 @@ jobs:
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
 
+      - name: Force Update Version
+        run: |
+          # 1. 파일 구조 확인 및 압축 해제
+          echo "Unzipping xtrusfcm.ipa to update Info.plist..."
+          mkdir -p Payload_tmp
+          unzip -q xtrusfcm.ipa -d Payload_tmp
+          
+          # 2. 빌드 번호 강제 수정
+          # 경로가 Payload_tmp/Payload/*.app 형태인지 확인하고 실행
+          echo "Setting CFBundleVersion to ${{ github.run_number }}..."
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" Payload_tmp/Payload/*.app/Info.plist
+          
+          # 3. 다시 압축하여 덮어쓰기
+          rm xtrusfcm.ipa
+          cd Payload_tmp && zip -rq ../xtrusfcm.ipa . && cd ..
+          rm -rf Payload_tmp
+          echo "IPA repackaged successfully."
+
       - name: Upload to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
