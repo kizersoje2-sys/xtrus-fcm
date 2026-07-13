@@ -36,11 +36,12 @@ jobs:
       # 빌드 파일명을 build.tar.gz로 고정하여 이후 단계에서 찾기 쉽게 함
       - name: Build Local Tarball
         run: |
-          # 1. 빌드 번호를 9로 강제 변경 (jq 도구 사용)
-          # macos-latest에는 jq가 기본 설치되어 있습니다.
-          jq '.expo.ios.buildNumber = "9"' app.json > temp.json && mv temp.json app.json
+          node -e "const fs = require('fs'); const app = JSON.parse(fs.readFileSync('app.json', 'utf8')); app.expo.ios.buildNumber = '${{ github.run_number }}'; fs.writeFileSync('app.json', JSON.stringify(app, null, 2));"
           
-          # 2. 빌드 실행
+          # 2. 강제로 ios 폴더를 새로 생성
+          npx expo prebuild --platform ios --clean
+          
+          # 3. 빌드 실행
           npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=xtrusfcm.ipa --clear-cache
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -49,14 +50,6 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
-
-      # - name: Package IPA
-      #   run: |
-      #     mkdir -p Payload
-      #     tar -zxf build.tar.gz -C Payload
-      #     APP_PATH=$(find Payload -name "*.app" -maxdepth 4 | head -n 1)
-      #     mv "$APP_PATH" Payload/xtrusfcm.app
-      #     zip -r xtrusfcm.ipa Payload
 
       - name: Upload to TestFlight
         uses: apple-actions/upload-testflight-build@v1
