@@ -42,16 +42,20 @@ jobs:
         run: |
           mkdir -p Payload
           tar -zxf build.tar.gz -C Payload
-          # 빌드된 결과물을 Payload 내부의 .app 폴더로 정확히 이동
-          # 빌드된 앱 이름이 다를 수 있으므로 와일드카드로 처리
-          mv Payload/*.app Payload/xtrusfcm.app
+          
+          # Payload 내부에서 .app 폴더를 자동으로 찾습니다.
+          APP_PATH=$(find Payload -name "*.app" -maxdepth 4 | head -n 1)
+          
+          if [ -z "$APP_PATH" ]; then
+            echo "에러: .app 파일을 찾을 수 없습니다."
+            find Payload -maxdepth 3 # 구조 확인을 위해 출력
+            exit 1
+          fi
+          
+          # 찾은 경로가 Payload/xtrusfcm.app 이 아니라면 이동/이름변경
+          mv "$APP_PATH" Payload/xtrusfcm.app
+          
           zip -r xtrusfcm.ipa Payload
-
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: xtrusfcm-ipa
-          path: xtrusfcm.ipa
 
   upload:
     needs: build
