@@ -37,36 +37,14 @@ jobs:
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
 
-      # IPA 생성 과정 간소화
       - name: Package IPA
         run: |
           mkdir -p Payload
           tar -zxf build.tar.gz -C Payload
-          
-          # Payload 내부에서 .app 폴더를 자동으로 찾습니다.
           APP_PATH=$(find Payload -name "*.app" -maxdepth 4 | head -n 1)
-          
-          if [ -z "$APP_PATH" ]; then
-            echo "에러: .app 파일을 찾을 수 없습니다."
-            find Payload -maxdepth 3 # 구조 확인을 위해 출력
-            exit 1
-          fi
-          
-          # 찾은 경로가 Payload/xtrusfcm.app 이 아니라면 이동/이름변경
           mv "$APP_PATH" Payload/xtrusfcm.app
-          
           zip -r xtrusfcm.ipa Payload
 
-  upload:
-    needs: build
-    runs-on: macos-latest
-    steps:
-      - name: Download IPA Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: xtrusfcm-ipa
-          path: .
-          
       - name: Upload to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
