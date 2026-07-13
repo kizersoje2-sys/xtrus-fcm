@@ -13,11 +13,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install dependencies
         run: npm install
 
+      # 중복 제거: Prebuild와 Pod install을 한 번만 실행
       - name: Expo Prebuild & Setup
         run: |
           npx expo prebuild --platform ios --clean
@@ -25,8 +26,9 @@ jobs:
           pod install --repo-update
           cd ..
 
+      # 빌드 파일명을 build.tar.gz로 고정하여 이후 단계에서 찾기 쉽게 함
       - name: Build Local Tarball
-        run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=app.tar.gz
+        run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=build.tar.gz
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           RCT_NEW_ARCH_ENABLED: 1
@@ -35,8 +37,36 @@ jobs:
           APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
           SENTRY_DISABLE_AUTO_UPLOAD: true
 
-      - name: Upload Build Artifact
+      # IPA 생성 과정 간소화
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          tar -zxf build.tar.gz -C Payload
+          # 빌드된 결과물을 Payload 내부의 .app 폴더로 정확히 이동
+          # 빌드된 앱 이름이 다를 수 있으므로 와일드카드로 처리
+          mv Payload/*.app Payload/xtrusfcm.app
+          zip -r xtrusfcm.ipa Payload
+
+      - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-build
-          path: app.tar.gz
+          name: xtrusfcm-ipa
+          path: xtrusfcm.ipa
+
+  upload:
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - name: Download IPA Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xtrusfcm-ipa
+          path: .
+          
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: 'xtrusfcm.ipa'
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
