@@ -10,6 +10,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "buildNumber": "9",
       "userInterfaceStyle": "light",
       "supportsTablet": true,
       "bundleIdentifier": "com.xtrus.fcm",

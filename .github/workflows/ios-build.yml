@@ -28,9 +28,7 @@ jobs:
 
       # 빌드 파일명을 build.tar.gz로 고정하여 이후 단계에서 찾기 쉽게 함
       - name: Build Local Tarball
-        run: |
-          BUILD_NUM=$(date +%Y%m%d%H%M)
-          npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=build.tar.gz
+        run: npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=build.tar.gz
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           RCT_NEW_ARCH_ENABLED: 1
