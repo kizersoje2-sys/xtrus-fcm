@@ -23,11 +23,9 @@
     "production": {
       "ios": {
         "buildConfiguration": "Release",
-        "autoIncrement": true,
         "image": "macos-tahoe-26.4-xcode-26.4"
       },
       "env": {
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
         "RCT_NEW_ARCH_ENABLED": "1", 
         "CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES": "YES"
       }
