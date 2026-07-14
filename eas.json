@@ -23,8 +23,7 @@
     "production": {
       "ios": {
         "buildConfiguration": "Release",
-        "image": "macos-tahoe-26.4-xcode-26.4",
-        "buildNumber": "${EXPO_BUILD_NUMBER}"
+        "image": "macos-tahoe-26.4-xcode-26.4"
       },
       "env": {
         "RCT_NEW_ARCH_ENABLED": "1", 
