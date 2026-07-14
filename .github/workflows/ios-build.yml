@@ -16,6 +16,13 @@ jobs:
           rm -rf .eas
           rm -rf xtrusfcm.ipa
 
+      - name: Reset EAS Auth
+        run: |
+          # 강제로 로그아웃 후 로컬 빌드용 인증만 사용하도록 설정
+          npx eas-cli logout
+          # 기존 캐시 강제 삭제
+          rm -rf ~/.eas
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

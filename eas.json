@@ -22,8 +22,7 @@
     },
     "production": {
       "ios": {
-        "buildConfiguration": "Release",
-        "image": "macos-tahoe-26.4-xcode-26.4"
+        "buildConfiguration": "Release"
       },
       "env": {
         "RCT_NEW_ARCH_ENABLED": "1", 
