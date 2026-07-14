@@ -7,12 +7,11 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-
       - name: Clean Workspace
         run: |
           rm -rf .expo
           rm -rf .eas
-          rm -rf build.tar.gz  # <-- 이전 빌드 결과물 삭제
+          rm -rf xtrusfcm.ipa
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,50 +24,23 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 중복 제거: Prebuild와 Pod install을 한 번만 실행
+      # 1. 여기서만 prebuild를 수행하여 빌드 번호를 반영합니다.
       - name: Expo Prebuild & Setup
         run: |
-          npx expo prebuild --platform ios --clean
-          cd ios
-          pod install --repo-update
-          cd ..
-
-      # 빌드 파일명을 build.tar.gz로 고정하여 이후 단계에서 찾기 쉽게 함
-      - name: Build Local Tarball
-        run: |
+          # 빌드 번호를 app.json에 강제 적용
           node -e "const fs = require('fs'); const app = JSON.parse(fs.readFileSync('app.json', 'utf8')); app.expo.ios.buildNumber = '${{ github.run_number }}'; fs.writeFileSync('app.json', JSON.stringify(app, null, 2));"
-          
-          # 2. 강제로 ios 폴더를 새로 생성
           npx expo prebuild --platform ios --clean
-          
-          # 3. 빌드 실행
+          cd ios && pod install --repo-update && cd ..
+
+      # 2. 빌드 실행 (이미 위에서 prebuild를 했으므로 여기선 빌드만 수행)
+      - name: Build Local IPA
+        run: |
           npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=xtrusfcm.ipa --clear-cache
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           RCT_NEW_ARCH_ENABLED: 1
-          APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
-          SENTRY_DISABLE_AUTO_UPLOAD: true
 
-      - name: Force Update Version
-        run: |
-          # 1. 파일 구조 확인 및 압축 해제
-          echo "Unzipping xtrusfcm.ipa to update Info.plist..."
-          mkdir -p Payload_tmp
-          unzip -q xtrusfcm.ipa -d Payload_tmp
-          
-          # 2. 빌드 번호 강제 수정
-          # 경로가 Payload_tmp/Payload/*.app 형태인지 확인하고 실행
-          echo "Setting CFBundleVersion to ${{ github.run_number }}..."
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" Payload_tmp/Payload/*.app/Info.plist
-          
-          # 3. 다시 압축하여 덮어쓰기
-          rm xtrusfcm.ipa
-          cd Payload_tmp && zip -rq ../xtrusfcm.ipa . && cd ..
-          rm -rf Payload_tmp
-          echo "IPA repackaged successfully."
-
+      # 3. 서명을 건드리지 않고, 만들어진 IPA를 그대로 업로드
       - name: Upload to TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
@@ -76,4 +48,3 @@ jobs:
           issuer-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
           api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
-          overwrite-build-number: true
