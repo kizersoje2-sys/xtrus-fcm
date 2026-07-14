@@ -23,6 +23,7 @@
     "production": {
       "ios": {
         "buildConfiguration": "Release",
+        "autoIncrement": true,
         "image": "macos-tahoe-26.4-xcode-26.4"
       },
       "env": {
