@@ -22,7 +22,8 @@
     },
     "production": {
       "ios": {
-        "buildConfiguration": "Release"
+        "buildConfiguration": "Release",
+        "autoIncrement": true
       },
       "env": {
         "RCT_NEW_ARCH_ENABLED": "1", 
