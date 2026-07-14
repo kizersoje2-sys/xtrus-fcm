@@ -39,6 +39,8 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           RCT_NEW_ARCH_ENABLED: 1
+          SENTRY_DISABLE_AUTO_UPLOAD: "true"
+          SENTRY_ALLOW_FAILURE: "true"
 
       # 3. 서명을 건드리지 않고, 만들어진 IPA를 그대로 업로드
       - name: Upload to TestFlight
