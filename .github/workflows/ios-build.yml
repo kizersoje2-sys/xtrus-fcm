@@ -35,7 +35,6 @@ jobs:
       # 1. 여기서만 prebuild를 수행하여 빌드 번호를 반영합니다.
       - name: Expo Prebuild & Setup
         run: |
-          node -e "const fs = require('fs'); const app = JSON.parse(fs.readFileSync('app.json', 'utf8')); app.expo.ios.buildNumber = '${{ github.run_number }}'; fs.writeFileSync('app.json', JSON.stringify(app, null, 2));"
           npx expo prebuild --platform ios --clean
           cd ios && pod install --repo-update && cd ..
         env:

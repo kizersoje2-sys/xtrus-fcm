@@ -606,18 +606,9 @@ export default function HomeScreen() {
       // 2. 메일 앱 설정이 안 되어 있다면 친절한 안내창 출력
       Alert.alert(
         "메일 설정 필요",
-        "아이폰 순정 'Mail' 앱에 이메일 계정이 등록되어 있지 않습니다.\n\n설정 -> 메일 -> 계정에서 이메일을 등록하시거나, 아래 토큰을 복사하여 PC에서 메일로 보내주세요.",
+        "아이폰 'Mail' 앱에 이메일 계정이 등록되어 있지 않습니다.\n\n'Mail'앱에 이메일을 등록하시거나, 아래 토큰을 복사하여 PC에서 메일로 보내주세요.",
         [
-          { text: "취소", style: "cancel" },
-          {
-            text: "설정으로 이동",
-            onPress: () => {
-              // 아이폰 설정창의 Mail 영역으로 다이렉트 이동 시키기
-              if (Platform.OS === 'ios') {
-                Linking.openURL('app-settings://notification/com.apple.mobilemail');
-              }
-            }
-          }
+          { text: "확인"}
         ]
       );
       return;
