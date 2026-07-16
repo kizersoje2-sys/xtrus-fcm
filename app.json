@@ -2,7 +2,10 @@
   "expo": {
     "name": "xtrus-fcm",
     "slug": "xtrus-fcm",
-    "platform": ["ios", "android"],
+    "platform": [
+      "ios",
+      "android"
+    ],
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
@@ -73,7 +76,7 @@
         "expo-build-properties",
         {
           "ios": {
-              "extraPodspecOptions": {
+            "extraPodspecOptions": {
               "modular_headers": true
             },
             "podfileProperties": {
@@ -92,18 +95,32 @@
       [
         "@react-native-firebase/app",
         {
-          "ios": { "googleServicesFile": "./GoogleService-Info.plist" },
-          "android": { "googleServicesFile": "./google-services.json" }
+          "ios": {
+            "googleServicesFile": "./GoogleService-Info.plist"
+          },
+          "android": {
+            "googleServicesFile": "./google-services.json"
+          }
         }
       ],
       [
         "@react-native-firebase/messaging",
         {
-          "ios": { "skipAppDelegateInit": true }
+          "ios": {
+            "skipAppDelegateInit": true
+          }
         }
       ],
       "expo-font",
-      "@sentry/react-native"
+      "@sentry/react-native",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react-native",
+          "organization": "xtrus"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
