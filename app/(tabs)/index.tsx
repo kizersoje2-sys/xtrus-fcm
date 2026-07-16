@@ -43,9 +43,9 @@ const TOKEN_CHECK_TASK = 'TOKEN_CHECK_TASK';
 TaskManager.defineTask(TOKEN_CHECK_TASK, async () => {
   try {
 
-    if(Platform.OS === 'ios'){
-        await messaging().registerDeviceForRemoteMessages();
-      }
+    if (Platform.OS === 'ios') {
+      await messaging().registerDeviceForRemoteMessages();
+    }
 
     const currentToken = await messaging().getToken();
     const savedToken = await SecureStore.getItemAsync('SAVED_FCM_TOKEN');
@@ -134,7 +134,7 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
 
   } catch (error) {
     console.error("백그라운드 처리 실패:", error);
-    Sentry.captureMessage(`백그라운드 처리 실패: `+ error);
+    Sentry.captureMessage(`백그라운드 처리 실패: ` + error);
   }
   return Promise.resolve();
 });
@@ -321,7 +321,7 @@ export default function HomeScreen() {
 
     const checkTokenOnStart = async () => {
 
-      if(Platform.OS === 'ios'){
+      if (Platform.OS === 'ios') {
         await messaging().registerDeviceForRemoteMessages();
       }
 
@@ -379,7 +379,7 @@ export default function HomeScreen() {
     const unsubscribeForegroundFCM = messaging().onMessage(async remoteMessage => {
       console.log(' 포그라운드 FCM 수신:', JSON.stringify(remoteMessage));
       Sentry.captureMessage(`포그라운드 FCM 수신: ${JSON.stringify(remoteMessage.data)}`);
-      
+
       const title = String(remoteMessage.data?.title || remoteMessage.notification?.title || "알림");
       const body = String(remoteMessage.data?.body || remoteMessage.notification?.body || "내용 없는 알림");
       const data = remoteMessage.data || {};
@@ -535,8 +535,16 @@ export default function HomeScreen() {
         data.docNumber || ""
       ];
 
-      await inDb.runAsync(query, params);
-      Sentry.captureMessage(`DB 저장 성공: ${data.messageCtrlId || data.logTime}`); // ← 추가
+
+      const result = await inDb.runAsync(query, params);
+      const countRow: any = await inDb.getFirstAsync('SELECT COUNT(*) as cnt FROM notification_logs');
+      const lastRows: any[] = await inDb.getAllAsync('SELECT id, logTime, messageCtrlId FROM notification_logs ORDER BY id DESC LIMIT 10');
+
+      Sentry.captureMessage(
+        `INSERT 결과: changes=${result.changes} / 전체row수=${countRow.cnt} / 최근10건=${JSON.stringify(lastRows)}`
+      );
+      // await inDb.runAsync(query, params);
+      // Sentry.captureMessage(`DB 저장 성공: ${data.messageCtrlId || data.logTime}`); // ← 추가
       DeviceEventEmitter.emit('NewPushDataArrived');
     } catch (error) {
       Sentry.captureMessage(`DB 저장 실패: ${String(error)} / ctrlId=${data.messageCtrlId || data.logTime}`); // ← 추가
@@ -591,7 +599,7 @@ export default function HomeScreen() {
         });
       }
 
-      if(Platform.OS === 'ios'){
+      if (Platform.OS === 'ios') {
         await messaging().registerDeviceForRemoteMessages();
       }
 
