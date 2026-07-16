@@ -450,7 +450,7 @@ export default function HomeScreen() {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           logTime TEXT,
           messageName TEXT,
-          messageCtrlId TEXT UNIQUE,
+          messageCtrlId TEXT,
           senderTpId TEXT,
           senderSvcId TEXT,
           recverTpId TEXT,
@@ -465,7 +465,8 @@ export default function HomeScreen() {
           templateID TEXT,
           nodeId TEXT,
           docNumber TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(messageCtrlId, logTime)
         );
       `);
     } catch (error) {
