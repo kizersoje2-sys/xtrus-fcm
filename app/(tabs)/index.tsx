@@ -337,8 +337,13 @@ export default function HomeScreen() {
           setIsWaitingAuth(true);
         }
         Alert.alert("인증 만료", "푸시 토큰이 변경되어 재인증이 필요합니다.");
-      }
 
+        await messaging().deleteToken();
+        const freshToken = await messaging().getToken();
+        await SecureStore.setItemAsync('SAVED_FCM_TOKEN', freshToken);
+        if (isMounted) setFcmToken(freshToken);
+        return; // 아래 중복 저장 방지
+      }
       await SecureStore.setItemAsync('SAVED_FCM_TOKEN', currentToken);
       if (isMounted) setFcmToken(currentToken);
     };
@@ -534,6 +539,7 @@ export default function HomeScreen() {
       DeviceEventEmitter.emit('NewPushDataArrived');
     } catch (error) {
       console.error("DB 저장 중 에러 발생:", error);
+      Alert.alert('DB 저장 중 에러' ,"오류: "+error);
     }
   };
 
@@ -608,7 +614,7 @@ export default function HomeScreen() {
         "메일 설정 필요",
         "아이폰 'Mail' 앱에 이메일 계정이 등록되어 있지 않습니다.\n\n'Mail'앱에 이메일을 등록하시거나, 아래 토큰을 복사하여 PC에서 메일로 보내주세요.",
         [
-          { text: "확인"}
+          { text: "확인" }
         ]
       );
       return;

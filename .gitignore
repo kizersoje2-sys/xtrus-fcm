@@ -41,3 +41,5 @@ app-example
 # generated native folders
 /ios
 /android
+
+credentials/ios/AuthKey_J4JC9A2BZ4.p8
