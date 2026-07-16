@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
+import * as Sentry from '@sentry/react-native';
 import CryptoJS from 'crypto-js';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as Clipboard from 'expo-clipboard';
@@ -96,7 +97,7 @@ Notifications.setNotificationHandler({
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   console.log('[백그라운드] FCM 수신:', JSON.stringify(remoteMessage.data));
-
+  Sentry.captureMessage(`백그라운드 FCM 수신: ${JSON.stringify(remoteMessage.data)}`);
   if (!inDb) {
     inDb = SQLite.openDatabaseSync('fcm_history.db');
   }
@@ -128,6 +129,7 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
 
   } catch (error) {
     console.error("백그라운드 처리 실패:", error);
+    Sentry.captureMessage(`백그라운드 처리 실패: `+ error);
   }
   return Promise.resolve();
 });
@@ -251,20 +253,6 @@ export default function HomeScreen() {
 
     initializeApp();
 
-    // iOS 환경 등을 위한 알림 권한 요청 (필수)
-    const requestUserPermission = async () => {
-      const authStatus = await messaging().requestPermission();
-      const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-      if (enabled) {
-        console.log('Authorization status:', authStatus);
-      }
-    };
-
-    requestUserPermission();
-
     // 푸시 알림 수신 동적 리스너
     const onPushReceived = async (title: string, body: string, data: any) => {
 
@@ -380,7 +368,8 @@ export default function HomeScreen() {
 
     const unsubscribeForegroundFCM = messaging().onMessage(async remoteMessage => {
       console.log(' 포그라운드 FCM 수신:', JSON.stringify(remoteMessage));
-
+      Sentry.captureMessage(`포그라운드 FCM 수신: ${JSON.stringify(remoteMessage.data)}`);
+      
       const title = String(remoteMessage.data?.title || remoteMessage.notification?.title || "알림");
       const body = String(remoteMessage.data?.body || remoteMessage.notification?.body || "내용 없는 알림");
       const data = remoteMessage.data || {};
@@ -539,7 +528,7 @@ export default function HomeScreen() {
       DeviceEventEmitter.emit('NewPushDataArrived');
     } catch (error) {
       console.error("DB 저장 중 에러 발생:", error);
-      Alert.alert('DB 저장 중 에러' ,"오류: "+error);
+      Sentry.captureMessage(`handlerIncomingPush DB 저장중 에러: `+ error);
     }
   };
 
