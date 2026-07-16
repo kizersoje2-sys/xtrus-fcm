@@ -42,6 +42,11 @@ const TOKEN_CHECK_TASK = 'TOKEN_CHECK_TASK';
 
 TaskManager.defineTask(TOKEN_CHECK_TASK, async () => {
   try {
+
+    if(Platform.OS === 'ios'){
+        await messaging().registerDeviceForRemoteMessages();
+      }
+
     const currentToken = await messaging().getToken();
     const savedToken = await SecureStore.getItemAsync('SAVED_FCM_TOKEN');
     if (savedToken && currentToken !== savedToken) {
@@ -315,6 +320,11 @@ export default function HomeScreen() {
     });
 
     const checkTokenOnStart = async () => {
+
+      if(Platform.OS === 'ios'){
+        await messaging().registerDeviceForRemoteMessages();
+      }
+
       const currentToken = await messaging().getToken();
       const savedToken = await SecureStore.getItemAsync('SAVED_FCM_TOKEN');
 
@@ -525,10 +535,11 @@ export default function HomeScreen() {
       ];
 
       await inDb.runAsync(query, params);
+      Sentry.captureMessage(`DB 저장 성공: ${data.messageCtrlId || data.logTime}`); // ← 추가
       DeviceEventEmitter.emit('NewPushDataArrived');
     } catch (error) {
+      Sentry.captureMessage(`DB 저장 실패: ${String(error)} / ctrlId=${data.messageCtrlId || data.logTime}`); // ← 추가
       console.error("DB 저장 중 에러 발생:", error);
-      Sentry.captureMessage(`handlerIncomingPush DB 저장중 에러: `+ error);
     }
   };
 
@@ -577,6 +588,10 @@ export default function HomeScreen() {
           importance: Notifications.AndroidImportance.MAX,
           vibrationPattern: [0, 250, 250, 250]
         });
+      }
+
+      if(Platform.OS === 'ios'){
+        await messaging().registerDeviceForRemoteMessages();
       }
 
       const realFcmToken = await messaging().getToken();
