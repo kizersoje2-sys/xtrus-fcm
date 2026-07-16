@@ -43,9 +43,7 @@ jobs:
 
       # 2. 빌드 실행 (이미 위에서 prebuild를 했으므로 여기선 빌드만 수행)
       - name: Build Local IPA
-        run:
-          # npx eas-cli@latest build --platform ios --profile production --local --non-interactive --output=xtrusfcm.ipa --clear-cache
-          npx eas-cli@latest build --platform ios --local --non-interactive --output=xtrusfcm.ipa --clear-cache --profile production
+        run: npx eas-cli@latest build --platform ios --local --non-interactive --output=xtrusfcm.ipa --clear-cache --profile production
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           SENTRY_DISABLE_AUTO_UPLOAD: "true"
