@@ -109,6 +109,18 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
   const title = String(remoteMessage.data?.title || remoteMessage.notification?.title || "알림");
   const body = String(remoteMessage.data?.body || remoteMessage.notification?.body || "내용 없는 알림");
   const data = remoteMessage.data || {};
+
+  if (Platform.OS === 'ios') {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: { title, body, sound: 'default', data },
+        trigger: null,
+      });
+    } catch (error) {
+      Sentry.captureMessage(`[백그라운드] 배너 표시 실패: ${String(error)}`);
+    }
+  }
+
   try {
 
     const query = `
@@ -136,16 +148,7 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
     console.error("백그라운드 처리 실패:", error);
     Sentry.captureMessage(`[백그라운드] DB 저장 실패: ${String(error)}`);
   }
-  if (Platform.OS === 'ios') {
-    try {
-      await Notifications.scheduleNotificationAsync({
-        content: { title, body, sound: 'default', data },
-        trigger: null,
-      });
-    } catch (error) {
-      Sentry.captureMessage(`[백그라운드] 배너 표시 실패: ${String(error)}`);
-    }
-  }
+  
   return Promise.resolve();
 });
 
