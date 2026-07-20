@@ -102,7 +102,7 @@ Notifications.setNotificationHandler({
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   console.log('[백그라운드] FCM 수신:', JSON.stringify(remoteMessage.data));
-  Sentry.captureMessage(`백그라운드 FCM 수신: ${JSON.stringify(remoteMessage.data)}`);
+  Sentry.captureMessage(`백그라운드 FCM 수신: ${JSON.stringify(remoteMessage.data)}`, 'info');
   if (!inDb) {
     inDb = SQLite.openDatabaseSync('fcm_history.db');
   }
@@ -117,7 +117,7 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
         trigger: null,
       });
     } catch (error) {
-      Sentry.captureMessage(`[백그라운드] 배너 표시 실패: ${String(error)}`);
+      Sentry.captureMessage(`[백그라운드] 배너 표시 실패: ${String(error)}`, 'error');
     }
   }
 
@@ -140,15 +140,17 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
     ];
 
     const result = await inDb.runAsync(query, params);
-    Sentry.captureMessage(`[백그라운드] INSERT 결과: changes=${result.changes}`);
+    Sentry.captureMessage(`[백그라운드] INSERT 결과: changes=${result.changes}`, 'info');
     DeviceEventEmitter.emit('NewPushDataArrived');
 
 
   } catch (error) {
     console.error("백그라운드 처리 실패:", error);
-    Sentry.captureMessage(`[백그라운드] DB 저장 실패: ${String(error)}`);
+    Sentry.captureMessage(`[백그라운드] DB 저장 실패: ${String(error)}`, 'error');
+  } finally {
+    await Sentry.flush();
   }
-  
+
   return Promise.resolve();
 });
 
@@ -391,7 +393,7 @@ export default function HomeScreen() {
 
     const unsubscribeForegroundFCM = messaging().onMessage(async remoteMessage => {
       console.log(' 포그라운드 FCM 수신:', JSON.stringify(remoteMessage));
-      Sentry.captureMessage(`포그라운드 FCM 수신: ${JSON.stringify(remoteMessage.data)}`);
+      Sentry.captureMessage(`포그라운드 FCM 수신: ${JSON.stringify(remoteMessage.data)}`, 'info');
 
       const title = String(remoteMessage.data?.title || remoteMessage.notification?.title || "알림");
       const body = String(remoteMessage.data?.body || remoteMessage.notification?.body || "내용 없는 알림");
@@ -554,13 +556,13 @@ export default function HomeScreen() {
       const lastRows: any[] = await inDb.getAllAsync('SELECT id, logTime, messageCtrlId FROM notification_logs ORDER BY id DESC LIMIT 10');
 
       Sentry.captureMessage(
-        `INSERT 결과: changes=${result.changes} / 전체row수=${countRow.cnt} / 최근10건=${JSON.stringify(lastRows)}`
+        `INSERT 결과: changes=${result.changes} / 전체row수=${countRow.cnt} / 최근10건=${JSON.stringify(lastRows)}`, 'info'
       );
       // await inDb.runAsync(query, params);
       // Sentry.captureMessage(`DB 저장 성공: ${data.messageCtrlId || data.logTime}`); // ← 추가
       DeviceEventEmitter.emit('NewPushDataArrived');
     } catch (error) {
-      Sentry.captureMessage(`DB 저장 실패: ${String(error)} / ctrlId=${data.messageCtrlId || data.logTime}`); // ← 추가
+      Sentry.captureMessage(`DB 저장 실패: ${String(error)} / ctrlId=${data.messageCtrlId || data.logTime}`, 'error'); // ← 추가
       console.error("DB 저장 중 에러 발생:", error);
     }
   };
