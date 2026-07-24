@@ -101,16 +101,21 @@ Notifications.setNotificationHandler({
 });
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
-  console.log('[백그라운드] FCM 수신:', JSON.stringify(remoteMessage.data));
-  if (!inDb) {
-    inDb = SQLite.openDatabaseSync('fcm_history.db');
-  }
-  const title = String(remoteMessage.data?.title || remoteMessage.notification?.title || "알림");
-  const body = String(remoteMessage.data?.body || remoteMessage.notification?.body || "내용 없는 알림");
-  const data = remoteMessage.data || {};
 
   try {
 
+    console.log('[백그라운드] FCM 수신:', JSON.stringify(remoteMessage.data));
+    if (!inDb) {
+      inDb = SQLite.openDatabaseSync('fcm_history.db');
+    }
+    const title = String(remoteMessage.data?.title || remoteMessage.notification?.title || "알림");
+    const body = String(remoteMessage.data?.body || remoteMessage.notification?.body || "내용 없는 알림");
+    const data = remoteMessage.data || {};
+
+    Sentry.captureMessage(
+      `[백그라운드] 진입 확인 / notification존재=${!!remoteMessage.notification} / data=${JSON.stringify(data)}`,
+      'info'
+    );
     const query = `
       INSERT OR IGNORE INTO notification_logs (
         logTime, messageName, messageCtrlId,
@@ -132,19 +137,17 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
     DeviceEventEmitter.emit('NewPushDataArrived');
 
     if (Platform.OS === 'ios') {
-    try {
-      await Notifications.scheduleNotificationAsync({
-        content: { title, body, sound: 'default', data },
-        trigger: null,
-      });
-    } catch (error) {
-      console.error('백그라운드 배너 표시 실패', error);
-      // Sentry.captureMessage(`[백그라운드] 배너 표시 실패: ${String(error)}`, 'error');
+      try {
+        await Notifications.scheduleNotificationAsync({
+          content: { title, body, sound: 'default', data },
+          trigger: null,
+        });
+      } catch (error) {
+        Sentry.captureMessage(`[백그라운드] 배너 표시 실패: ${String(error)}`, 'error');
+      }
     }
-  }
 
   } catch (error) {
-    console.error("백그라운드 처리 실패:", error);
     Sentry.captureMessage(`[백그라운드] DB 저장 실패: ${String(error)}`, 'error');
   } finally {
     await Sentry.flush();
